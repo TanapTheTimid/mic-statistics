@@ -168,8 +168,6 @@ def approxCharacteristicMatrix(D, B):
 
     return M
 
-
-D = np.array(([1,1], [0,0], [2,2], [8,10], [1,3], [2,4], [12,12], [14,14], [16, 18], [20,17], [24,24]))
-
+D = np.array(([1,7], [0,0], [2,-2], [8,0], [1,3], [2,4], [12,19], [14,14], [16, 18], [20,17], [24,14]))
 
 print(approxCharacteristicMatrix(D, 10))
