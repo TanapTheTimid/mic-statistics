@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+import random
 
 def sort_by_column(a, col):
     return a[a[:, col].argsort()]
@@ -170,4 +171,11 @@ def approxCharacteristicMatrix(D, B):
 
 D = np.array(([1,7], [0,0], [2,-2], [8,0], [1,3], [2,4], [12,19], [14,14], [16, 18], [20,17], [24,14]))
 
-print(approxCharacteristicMatrix(D, 10))
+D = []
+for i in range(100):
+    noise = random.randint(-100,100)
+    D = D + [[i,i + noise]]
+
+D = np.array(D)
+
+print(approxCharacteristicMatrix(D, 20))
