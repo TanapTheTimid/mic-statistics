@@ -18,6 +18,35 @@ def getClumpsPartition(D, Q):
     cluster = cluster + [len(D)]
     return cluster
 
+def getSuperclumpsPartition(D, QQ, yy, y):
+    n = yy
+    i = 1
+    currRow = 1
+    desiredRowSize = n / y
+    Q = dict()
+
+    for row in D:
+        Q[(row[0], row[1])] = -1
+
+    while i <= n:
+        bi = QQ[(D[i - 1][0], D[i - 1][1])]
+        S = []
+        for row in D:
+            if QQ[(row[0], row[1])] == bi:
+                S = S + [(row[0], row[1])]
+        sharp = 0
+        for row in D:
+            if Q[(row[0], row[1])] == currRow:
+                sharp = sharp + 1
+        if sharp != 0 and abs(sharp + len(S) - desiredRowSize) >= abs(sharp - desiredRowSize):
+            if currRow < y - 1:
+                currRow = currRow + 1
+            desiredRowSize = (n - i + 1) / (y - currRow + 1)
+        for (sx, sy) in S:
+            Q[(sx, sy)] = currRow
+        i = i + len(S)
+    return getClumpsPartition(D, Q)
+
 def h1p(P):
     total_num_points = P[len(P) - 1] - P[0]
     sum = 0
@@ -67,6 +96,48 @@ def h2pq(P, Q, y, D):
             sum = sum + incr
     sum = sum * -1
     return sum
+
+def approxOptimizeXAxis(D, Q, x, y, khat):
+    c = getSuperclumpsPartition(D, Q, y, khat)
+    k = len(c) - 1
+
+    HQ = h1q(Q, y)
+
+    P = dict()
+    I = dict()
+
+    for t in range(2, k + 1):
+        max_s = 1
+        max_s_val = h1p([c[0], c[1], c[t]]) - h2pq([c[0], c[1], c[t]], Q, y, D)
+        for s in range(2, t):
+            s_val = h1p([c[0], c[s], c[t]]) - h2pq([c[0], c[s], c[t]], Q, y, D)
+            if s_val > max_s_val:
+                max_s_val = s_val 
+                max_s = s 
+        P[(t,2)] = [c[0], c[max_s], c[t]]
+        I[(t,2)] = HQ + h1p(P[(t,2)]) - h2pq(P[(t,2)], Q, y, D)
+
+    for l in range(3, x + 1):
+        for t in range(l, k + 1):
+            max_s = l - 1 
+            max_s_val = (c[max_s] / c[t]) * (I[(max_s, l-1)] - HQ) - ((c[t] - c[max_s]) / c[t]) * h2pq([c[max_s], c[t]], Q, y, D)
+            for s in range(l, t):
+                s_val = (c[s] / c[t]) * (I[(s, l-1)] - HQ) - ((c[t] - c[s]) / c[t]) * h2pq([c[s], c[t]], Q, y, D)
+                if s_val > max_s_val:
+                    max_s_val = s_val
+                    max_s = s
+            P[(t,l)] = P[(max_s, l - 1)] + [c[t]]
+            I[(t,l)] = HQ + h1p(P[(t,l)]) - h2pq(P[(t,l)], Q, y, D)
+    
+    for l in range(k + 1, x + 1):
+        P[(k,l)] = P[(k,k)]
+        I[(k,l)] = I[(k,k)]
+
+    fin = []
+    for i in range(2, x+1):
+        fin = fin + [I[(k,i)]]
+
+    return fin
 
 def optimizeXAxis(D, Q, x, y):
     c = getClumpsPartition(D, Q)
@@ -139,12 +210,12 @@ def equipartitionYAxis(D, y):
         i = i + len(S)
     return Q 
 
-def approxMaxMI(D, x, y):
+def approxMaxMI(D, x, y, khat):
     Q = equipartitionYAxis(D, y)
     D = sort_by_column(D, 0)
-    return optimizeXAxis(D, Q, x, y)
+    return approxOptimizeXAxis(D, Q, x, y, khat)
 
-def approxCharacteristicMatrix(D, B):
+def approxCharacteristicMatrix(D, B, c):
     D_complement = D.copy()
     D_complement[:, [1, 0]] = D[:, [0, 1]]
 
@@ -154,10 +225,10 @@ def approxCharacteristicMatrix(D, B):
 
     for y in range(2, math.floor(B/2) + 1):
         x = math.floor(B/y)
-        res1 = approxMaxMI(D, x, y)
+        res1 = approxMaxMI(D, x, y, c*x)
         for idx, elem in enumerate(res1):
             I[(2 + idx, y)] = elem 
-        res2 = approxMaxMI(D_complement, x, y)
+        res2 = approxMaxMI(D_complement, x, y, c*x)
         for idx, elem in enumerate(res2):
             I_complement[(2 + idx, y)] = elem 
     
@@ -178,4 +249,4 @@ for i in range(100):
 
 D = np.array(D)
 
-print(approxCharacteristicMatrix(D, 20))
+print(approxCharacteristicMatrix(D, 60, 10))
