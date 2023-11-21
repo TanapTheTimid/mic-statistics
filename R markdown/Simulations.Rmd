@@ -60,7 +60,7 @@ names(apoptosis) <- sapply(apoptosis, function(df) deparse(substitute(df)))
 ## Simple datasets
 
 ```{r}
-relationships <- c("positive_linear", "negative_linear", "no_relationship", "polynomial", "sinusoidal", "ellipsoid")
+relationships <- c("positive_linear", "negative_linear", "no_relationship", "polynomial", "sinusoidal", "ellipsoid", "circular", "spiral")
 relationship_datasets <- list()
 
 # Set the common parameters
@@ -95,6 +95,23 @@ adjust_noise <- function(y, x, desired_R2) {
   return(y_noisy)
 }
 
+# Function to generate circular data in polar coordinates
+generate_circular_data <- function(n_points, noise_level) {
+  theta <- seq(0, 2 * pi, length.out = n_points)
+  r <- rep(1, n_points)  # You can adjust the radius as needed
+  noise <- rnorm(n_points, 0, noise_level)
+  return(data.frame(x = (r + noise) * cos(theta), y = (r + noise) * sin(theta)))
+}
+
+# Function to generate spiral data in polar coordinates
+generate_spiral_data <- function(n_points, noise_level) {
+  theta <- seq(0, 4 * pi, length.out = n_points)
+  r <- 0.5 * theta  # Adjust the factor to control the spiral shape
+  noise <- rnorm(n_points, 0, noise_level)
+  return(data.frame(x = (r + noise) * cos(theta), y = (r + noise) * sin(theta)))
+}
+
+
 # Create and save datasets based on the relationship
 for (relationship in relationships) {
   cat("Generating datasets for:", relationship, "\n")
@@ -127,6 +144,14 @@ for (relationship in relationships) {
       nan_rows <- is.na(y)
       x <- x[!nan_rows]
       y <- y[!nan_rows]
+    } else if (relationship == "circular") {
+      data <- generate_circular_data(n, noise)
+      x <- data$x
+      y <- data$y
+    } else if (relationship == "spiral") {
+      data <- generate_spiral_data(n, noise)
+      x <- data$x
+      y <- data$y
     }
     if (relationship == "no_relationship") {
       y_noisy <- y + rnorm(n, mean = 0, sd = noise) # Add noise directly without R^2 adjustment
@@ -141,6 +166,25 @@ for (relationship in relationships) {
 
 
 ```
+
+```{r}
+setwd("simulation/noisy_cubic")
+csv_files <- list.files(pattern = "\\.csv$")
+noisy_cubic <- list()
+
+noisy_cubic <- lapply(csv_files, function(file) {
+  df_name <- sub("\\.csv", "", file)  # Remove the ".csv" extension
+  df <- read.csv(file, sep = ";", header = TRUE)
+  df[, !grepl("^t$", names(df))]
+})
+# Multiply each number by 10 when assigning names to the list elements
+names(noisy_cubic) <- as.character(as.numeric(sub("\\.csv", "", csv_files)) * 10)
+```
+```{r}
+relationship_datasets[["ODE"]] <- noisy_cubic
+relationships <- c(relationships, "ODE")
+```
+
 ## Visualizing simulated datasets
 ```{r}
 # Function to visualize datasets
