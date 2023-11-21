@@ -678,3 +678,47 @@ ggsave("ApoptosisMIC_Rand.png", plot = p, dpi = 300)
 
 ```
 
+# Stochastic Model Analysis
+
+```{r}
+setwd("simulation/stochastic")
+csv_files <- list.files(pattern = "\\.csv$")
+stochastic <- list()
+
+stochastic <- lapply(csv_files, function(file) {
+  df_name <- sub(".csv", "", file)  # Remove the ".csv" extension
+  df <- read.csv(file, sep = ",", header = TRUE)
+  colnames(df) <- c("x", "y")
+  return(df)
+})
+names(stochastic) <- sapply(stochastic, function(df) deparse(substitute(df)))
+```
+
+```{r}
+n <- 20
+random_stochastic <- sample(stochastic, n)
+```
+
+```{r}
+mic_scores <- c()
+i <- 0
+for (df in random_stochastic) {
+  mic <- mine_stat(df$x, df$y, measure = 'mic')
+  mic_scores <- c(mic_scores, mic)
+  i <- i + 1
+  print(i)
+}
+```
+
+```{r}
+# Create a horizontal box plot
+p <- ggplot(data = data.frame(MIC_Score = mic_scores), aes(x = MIC_Score)) +
+  geom_boxplot() +
+  labs(x = "Stochastic MIC Score", y = NULL) +
+  theme_minimal() +
+  theme(axis.text.y = element_blank(),    # Remove y-axis text (labels)
+        axis.ticks.y = element_blank())
+p
+ggsave("Stochastic.png", plot = p, width=6, height = 2, dpi = 300)
+
+```
