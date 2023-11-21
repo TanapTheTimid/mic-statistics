@@ -264,7 +264,7 @@ p <- ggplot(results_2, aes(x = NoiseLevel, y = MINE, color = RelationshipType)) 
   theme_minimal()
 p
 
-ggsave("ArtificialDatasetsNew11.png", plot = p, dpi = 300)
+ggsave("TestDataMIC.png", plot = p, dpi = 300)
 ```
 ## Computing Dist. Corr. for the same datasets
 ```{r}
@@ -302,7 +302,7 @@ p <- ggplot(results_ener, aes(x = NoiseLevel, y = dcor, color = RelationshipType
   theme_minimal()
 p
 
-ggsave("ArtificialDatasetsDistCorr.png", plot = p, dpi = 300)
+ggsave("TestDataDistCorr.png", plot = p, dpi = 300)
 ```
 # Applying radial transformation
 
@@ -373,7 +373,7 @@ p <- ggplot(results_2, aes(x = NoiseLevel, y = MINE, color = RelationshipType)) 
   theme_minimal()
 p
 
-ggsave("ArtificialDatasetsNew11.png", plot = p, dpi = 300)
+ggsave("TestDataMICPolar.png", plot = p, dpi = 300)
 ```
 ## Computing Dist. Corr. for the same datasets
 ```{r}
@@ -411,7 +411,7 @@ p <- ggplot(results_ener, aes(x = NoiseLevel, y = dcor, color = RelationshipType
   theme_minimal()
 p
 
-ggsave("ArtificialDatasetsDistCorr.png", plot = p, dpi = 300)
+ggsave("TestDataDistCorrPolar.png", plot = p, dpi = 300)
 ```
 
 ## Testing the systems biology datasets
